@@ -1,0 +1,6 @@
+# web-ext build output
+web-ext-artifacts/
+
+# npm / Node
+node_modules/
+package-lock.json

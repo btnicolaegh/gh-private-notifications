@@ -1,0 +1,75 @@
+name: Build Extension
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Install web-ext
+        run: npm install --global web-ext
+
+      - name: Show extension info
+        run: |
+          echo "### Extension metadata" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+          node -e "
+            const m = require('./manifest.json');
+            console.log('| Name | ' + m.name + ' |');
+            console.log('| Version | ' + m.version + ' |');
+            console.log('| Gecko ID | ' + m.browser_specific_settings.gecko.id + ' |');
+            console.log('| Min Firefox | ' + m.browser_specific_settings.gecko.strict_min_version + ' |');
+            console.log('| Manifest version | ' + m.manifest_version + ' |');
+            console.log('| Permissions | \`' + m.permissions.join(', ') + '\` |');
+          " >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Lint
+        run: web-ext lint --verbose
+        # Collect the lint report and write it to the job summary
+        continue-on-error: false
+
+      - name: Build
+        run: web-ext build --overwrite-dest
+
+      - name: Capture build details
+        run: |
+          ZIP=$(ls web-ext-artifacts/*.zip)
+          SIZE=$(du -sh "$ZIP" | cut -f1)
+          FILES=$(unzip -l "$ZIP" | tail -n +4 | head -n -2 | awk '{print $NF}')
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Build artifact" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| File | \`$(basename $ZIP)\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Size | $SIZE |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Packaged files:**" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "$FILES" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gh-private-notifications
+          path: web-ext-artifacts/*.zip
+          if-no-files-found: error
+          retention-days: 90

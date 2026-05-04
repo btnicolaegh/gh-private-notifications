@@ -1,0 +1,92 @@
+/* popup.css */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Ensure the HTML `hidden` attribute always wins over display:flex rules */
+[hidden] { display: none !important; }
+
+body {
+  width: 280px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  color: #24292e;
+  background: #fff;
+}
+
+/* ── header ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #24292e;
+  color: #fff;
+}
+.header__icon { width: 20px; height: 20px; }
+.header__title { font-weight: 600; font-size: 14px; }
+
+/* ── content ── */
+.content { padding: 14px 12px; }
+
+.state { display: flex; flex-direction: column; gap: 8px; }
+.state--warn  p { color: #856404; }
+.state--error p { color: #842029; }
+.state__label { font-weight: 600; }
+.state__detail { font-size: 11px; word-break: break-word; }
+
+/* badge row */
+.badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #cc0000;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 0 6px;
+}
+.badge-label { font-size: 13px; color: #57606a; }
+.meta { font-size: 11px; color: #8b949e; }
+
+/* actions */
+.actions { display: flex; gap: 6px; margin-top: 6px; }
+
+/* buttons */
+.btn {
+  flex: 1;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.btn:hover { opacity: .85; }
+.btn--primary  { background: #2da44e; color: #fff; }
+.btn--secondary { background: #f6f8fa; color: #24292e; border: 1px solid #d0d7de; }
+
+/* ── footer ── */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 12px 8px;
+  border-top: 1px solid #d0d7de;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: #0969da;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+.link-btn:hover { text-decoration: underline; }
