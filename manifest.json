@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "GitHub Private Notifications",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Monitor GitHub Enterprise inbox and mentions and receive system notifications — even when email is disabled.",
   "author": "btnicolaegh",
 

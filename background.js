@@ -1,8 +1,10 @@
 /**
  * background.js
  *
- * Polls the GitHub Enterprise REST API for unread notifications (inbox + mentions)
- * and fires browser/system notifications for any new items.
+ * Polls the GitHub Enterprise REST API for unread notifications (inbox)
+ * and fires browser/system notifications based on the user's granular
+ * trigger settings.  Also polls the search API to detect new PRs opened
+ * by watched users.
  */
 
 "use strict";
@@ -39,19 +41,29 @@ async function getSettings() {
     githubUrl: "",
     token: "",
     pollInterval: DEFAULT_POLL_INTERVAL_MINUTES,
-    showInbox: true,
-    showMentions: true,
+    watchedUsers: "",
+    notifyMyPRComments: true,
+    notifyReviewRequested: true,
+    notifyWatchedUserPR: true,
+    notifyMentions: true,
+    notifyAssigned: true,
+    notifyOther: true,
   });
+}
+
+/** Extract "org/repo" from a GitHub HTML URL like https://host/org/repo/pull/1 */
+function extractRepoFromUrl(htmlUrl) {
+  try {
+    const parts = new URL(htmlUrl).pathname.split("/").filter(Boolean);
+    if (parts.length >= 2) return `${parts[0]}/${parts[1]}`;
+  } catch (_) {}
+  return "";
 }
 
 // ─── GitHub API ─────────────────────────────────────────────────────────────
 
 /**
  * Fetch all unread notifications from the GitHub Enterprise instance.
- *
- * @param {string} baseUrl  Root URL of the GHE instance, e.g. "https://github.example.com"
- * @param {string} token    Personal Access Token with `notifications` scope
- * @returns {Promise<Array>} Array of GitHub notification objects
  */
 async function fetchNotifications(baseUrl, token) {
   const apiBase = baseUrl.replace(/\/+$/, "") + "/api/v3";
@@ -73,7 +85,29 @@ async function fetchNotifications(baseUrl, token) {
   return response.json();
 }
 
-// ─── notifications ──────────────────────────────────────────────────────────
+/**
+ * Search for the most-recent open PRs authored by a given user.
+ * Returns an empty array on any error to avoid blocking the poll cycle.
+ */
+async function searchOpenPRsByUser(apiBase, token, username) {
+  const query = encodeURIComponent(`is:pr is:open author:${username}`);
+  const url = `${apiBase}/search/issues?q=${query}&sort=created&order=desc&per_page=10`;
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.items || [];
+  } catch (_) {
+    return [];
+  }
+}
+
+// ─── notification helpers ────────────────────────────────────────────────────
 
 /** Map a GitHub notification reason to a human-readable emoji prefix. */
 function reasonLabel(reason) {
@@ -92,6 +126,35 @@ function reasonLabel(reason) {
     ci_activity: "⚙️ CI activity",
   };
   return map[reason] || "🔔 Notification";
+}
+
+/**
+ * Decide whether to fire a browser notification for a GitHub notification
+ * object, based on the user's granular trigger settings.
+ *
+ * Each category is mutually exclusive from "other":
+ *   - notifyMyPRComments   → reason=author  + subject.type=PullRequest
+ *   - notifyReviewRequested → reason=review_requested
+ *   - notifyMentions        → reason=mention | team_mention
+ *   - notifyAssigned        → reason=assign
+ *   - notifyOther           → everything that didn't match the above
+ */
+function shouldNotify(notification, settings) {
+  const reason = notification.reason;
+  const type = notification.subject.type;
+
+  const isMyPRActivity = type === "PullRequest" && reason === "author";
+  const isReviewRequest = reason === "review_requested";
+  const isMention = reason === "mention" || reason === "team_mention";
+  const isAssigned = reason === "assign";
+
+  if (isMyPRActivity) return settings.notifyMyPRComments;
+  if (isReviewRequest) return settings.notifyReviewRequested;
+  if (isMention) return settings.notifyMentions;
+  if (isAssigned) return settings.notifyAssigned;
+
+  // Anything that didn't fall into a specific category above
+  return settings.notifyOther;
 }
 
 /** Show a single browser notification for a GitHub notification object. */
@@ -116,9 +179,71 @@ function updateBadge(count) {
   browser.browserAction.setBadgeBackgroundColor({ color: "#cc0000" });
 }
 
+// ─── watched-user PR polling ─────────────────────────────────────────────────
+
+/**
+ * Poll the search API for new open PRs from each watched user and fire a
+ * browser notification for any that haven't been seen before.
+ *
+ * Strategy: store the creation timestamp of the newest PR seen per user.
+ * On the very first poll for a user we record the timestamp without notifying,
+ * so users don't get a flood of alerts when they first add someone to the list.
+ */
+async function pollWatchedUserPRs(apiBase, token, watchedUsers) {
+  const data = await browser.storage.local.get({
+    watchedUserLastPRTime: {},
+    notifUrls: {},
+  });
+  const lastPRTime = data.watchedUserLastPRTime;
+  const notifUrls = data.notifUrls;
+  let changed = false;
+
+  for (const username of watchedUsers) {
+    const prs = await searchOpenPRsByUser(apiBase, token, username);
+
+    if (!(username in lastPRTime)) {
+      // First time seeing this user — seed timestamp, skip notifications.
+      const newest = prs.reduce((max, pr) => {
+        const t = new Date(pr.created_at).getTime();
+        return t > max ? t : max;
+      }, 0);
+      lastPRTime[username] = newest || Date.now();
+      changed = true;
+      continue;
+    }
+
+    const userLastTime = lastPRTime[username];
+    let maxTime = userLastTime;
+
+    for (const pr of prs) {
+      const prTime = new Date(pr.created_at).getTime();
+      if (prTime > maxTime) maxTime = prTime;
+
+      if (prTime > userLastTime) {
+        const notifId = `watched-pr-${pr.id}`;
+        const repo = extractRepoFromUrl(pr.html_url);
+        browser.notifications.create(notifId, {
+          type: "basic",
+          iconUrl: browser.runtime.getURL("icons/icon.svg"),
+          title: `👥 New PR from @${pr.user.login}`,
+          message: `${pr.title}${repo ? ` — ${repo}` : ""}`,
+        });
+        notifUrls[notifId] = pr.html_url;
+        changed = true;
+      }
+    }
+
+    lastPRTime[username] = maxTime;
+  }
+
+  if (changed) {
+    await browser.storage.local.set({ watchedUserLastPRTime: lastPRTime, notifUrls });
+  }
+}
+
 // ─── core poll logic ─────────────────────────────────────────────────────────
 
-/** Perform one poll cycle: fetch, diff, notify. */
+/** Perform one poll cycle: fetch notifications, diff, notify. */
 async function pollNotifications() {
   const settings = await getSettings();
 
@@ -127,6 +252,8 @@ async function pollNotifications() {
     updateBadge(0);
     return;
   }
+
+  const apiBase = settings.githubUrl.replace(/\/+$/, "") + "/api/v3";
 
   await loadSeenIds();
 
@@ -150,13 +277,7 @@ async function pollNotifications() {
       seenIds.add(n.id);
       newCount++;
 
-      const isMention =
-        n.reason === "mention" || n.reason === "team_mention";
-
-      if (
-        (settings.showMentions && isMention) ||
-        (settings.showInbox && !isMention)
-      ) {
+      if (shouldNotify(n, settings)) {
         showBrowserNotification(n);
       }
     }
@@ -169,6 +290,16 @@ async function pollNotifications() {
   updateBadge(notifications.length);
   // Store unread count for the popup.
   await browser.storage.local.set({ unreadCount: notifications.length });
+
+  // Poll watched user PRs if the trigger is enabled and users are configured.
+  const watchedUsers = settings.watchedUsers
+    .split(/[\s,]+/)
+    .map((u) => u.trim())
+    .filter(Boolean);
+
+  if (settings.notifyWatchedUserPR && watchedUsers.length > 0) {
+    await pollWatchedUserPRs(apiBase, settings.token, watchedUsers);
+  }
 }
 
 // ─── alarm management ────────────────────────────────────────────────────────
@@ -192,14 +323,26 @@ browser.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-/** Open the notifications page when the user clicks a browser notification. */
+/**
+ * Open the right URL when the user clicks a browser notification.
+ * Watched-user PR notifications open the PR directly; all others open
+ * the GitHub notifications inbox.
+ */
 browser.notifications.onClicked.addListener(async (notificationId) => {
   const { githubUrl } = await getSettings();
-  if (githubUrl) {
+  const { notifUrls = {} } = await browser.storage.local.get({ notifUrls: {} });
+
+  if (notifUrls[notificationId]) {
+    browser.tabs.create({ url: notifUrls[notificationId] });
+    // Clean up stored URL for this notification.
+    delete notifUrls[notificationId];
+    await browser.storage.local.set({ notifUrls });
+  } else if (githubUrl) {
     browser.tabs.create({
       url: `${githubUrl.replace(/\/+$/, "")}/notifications`,
     });
   }
+
   browser.notifications.clear(notificationId);
 });
 

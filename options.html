@@ -69,19 +69,48 @@
       </section>
 
       <section class="section">
-        <h2 class="section__title">Notifications</h2>
+        <h2 class="section__title">Notification Triggers</h2>
+        <p class="section__hint">Choose which events fire a browser notification.</p>
 
         <div class="field field--inline">
-          <input type="checkbox" id="show-inbox" name="showInbox" class="field__check" />
-          <label class="field__label" for="show-inbox">
-            Notify for inbox items (assignments, comments, state changes…)
+          <input type="checkbox" id="notify-my-pr-comments" name="notifyMyPRComments" class="field__check" />
+          <label class="field__label" for="notify-my-pr-comments">
+            ✍️ Comments &amp; activity on <strong>my PRs</strong>
           </label>
         </div>
 
         <div class="field field--inline">
-          <input type="checkbox" id="show-mentions" name="showMentions" class="field__check" />
-          <label class="field__label" for="show-mentions">
-            Notify for @mentions and team mentions
+          <input type="checkbox" id="notify-review-requested" name="notifyReviewRequested" class="field__check" />
+          <label class="field__label" for="notify-review-requested">
+            🔍 <strong>Assigned to review</strong> a PR
+          </label>
+        </div>
+
+        <div class="field field--inline">
+          <input type="checkbox" id="notify-watched-user-pr" name="notifyWatchedUserPR" class="field__check" />
+          <label class="field__label" for="notify-watched-user-pr">
+            👥 New PR opened by a <strong>watched user</strong>
+          </label>
+        </div>
+
+        <div class="field field--inline">
+          <input type="checkbox" id="notify-mentions" name="notifyMentions" class="field__check" />
+          <label class="field__label" for="notify-mentions">
+            📢 <strong>@mentions</strong> and team mentions
+          </label>
+        </div>
+
+        <div class="field field--inline">
+          <input type="checkbox" id="notify-assigned" name="notifyAssigned" class="field__check" />
+          <label class="field__label" for="notify-assigned">
+            🔖 <strong>Assigned</strong> to an issue or PR
+          </label>
+        </div>
+
+        <div class="field field--inline">
+          <input type="checkbox" id="notify-other" name="notifyOther" class="field__check" />
+          <label class="field__label" for="notify-other">
+            🔔 All other inbox notifications
           </label>
         </div>
       </section>

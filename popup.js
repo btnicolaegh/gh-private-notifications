@@ -72,6 +72,11 @@ $("open-mentions").addEventListener("click", () =>
   openTab("/notifications?query=reason%3Amention")
 );
 
+$("open-summary-btn").addEventListener("click", () => {
+  browser.tabs.create({ url: browser.runtime.getURL("summary.html") });
+  window.close();
+});
+
 $("check-now-btn").addEventListener("click", async () => {
   // Trigger background to poll immediately by sending a one-off alarm.
   await browser.runtime.sendMessage({ type: "pollNow" }).catch(() => {
