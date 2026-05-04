@@ -25,15 +25,25 @@ async function loadSettings() {
     githubUrl: "",
     token: "",
     pollInterval: 5,
-    showInbox: true,
-    showMentions: true,
+    watchedUsers: "",
+    notifyMyPRComments: true,
+    notifyReviewRequested: true,
+    notifyWatchedUserPR: true,
+    notifyMentions: true,
+    notifyAssigned: true,
+    notifyOther: true,
   });
 
   $("github-url").value = settings.githubUrl;
   $("token").value = settings.token;
   $("poll-interval").value = settings.pollInterval;
-  $("show-inbox").checked = settings.showInbox;
-  $("show-mentions").checked = settings.showMentions;
+  $("watched-users").value = settings.watchedUsers;
+  $("notify-my-pr-comments").checked = settings.notifyMyPRComments;
+  $("notify-review-requested").checked = settings.notifyReviewRequested;
+  $("notify-watched-user-pr").checked = settings.notifyWatchedUserPR;
+  $("notify-mentions").checked = settings.notifyMentions;
+  $("notify-assigned").checked = settings.notifyAssigned;
+  $("notify-other").checked = settings.notifyOther;
 }
 
 // ─── save settings ───────────────────────────────────────────────────────────
@@ -45,8 +55,13 @@ async function saveSettings(event) {
   const githubUrl = $("github-url").value.trim().replace(/\/+$/, "");
   const token = $("token").value.trim();
   const pollInterval = Math.max(1, Math.min(60, parseInt($("poll-interval").value, 10) || 5));
-  const showInbox = $("show-inbox").checked;
-  const showMentions = $("show-mentions").checked;
+  const watchedUsers = $("watched-users").value.trim();
+  const notifyMyPRComments = $("notify-my-pr-comments").checked;
+  const notifyReviewRequested = $("notify-review-requested").checked;
+  const notifyWatchedUserPR = $("notify-watched-user-pr").checked;
+  const notifyMentions = $("notify-mentions").checked;
+  const notifyAssigned = $("notify-assigned").checked;
+  const notifyOther = $("notify-other").checked;
 
   if (!githubUrl) {
     setFeedback($("save-result"), "Please enter the GitHub Enterprise URL.", "error");
@@ -72,8 +87,13 @@ async function saveSettings(event) {
     githubUrl,
     token,
     pollInterval,
-    showInbox,
-    showMentions,
+    watchedUsers,
+    notifyMyPRComments,
+    notifyReviewRequested,
+    notifyWatchedUserPR,
+    notifyMentions,
+    notifyAssigned,
+    notifyOther,
   });
 
   setFeedback($("save-result"), "✔ Settings saved.", "ok");

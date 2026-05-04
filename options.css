@@ -57,6 +57,11 @@ body {
   font-weight: 600;
   color: #24292e;
 }
+.section__hint {
+  font-size: 12px;
+  color: #57606a;
+  margin-top: -8px;
+}
 
 /* ── fields ── */
 .field {
@@ -88,6 +93,13 @@ body {
   background: #fff;
 }
 .field__input--short { width: 80px; }
+.field__input--textarea {
+  resize: vertical;
+  min-height: 72px;
+  font-family: ui-monospace, "Cascadia Code", "Fira Code", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
 .field__check { width: 16px; height: 16px; accent-color: #0969da; flex-shrink: 0; }
 
 /* ── input row ── */

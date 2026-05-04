@@ -1,0 +1,227 @@
+/* summary.css */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  color: #24292e;
+  background: #f6f8fa;
+  min-height: 100vh;
+}
+
+/* ── page layout ── */
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+}
+
+/* ── page header ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #d0d7de;
+}
+.page-header__icon { width: 28px; height: 28px; flex-shrink: 0; }
+.page-header__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #24292e;
+  flex: 1;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.meta-line {
+  font-size: 12px;
+  color: #8b949e;
+}
+
+/* ── state notices ── */
+.state-notice {
+  text-align: center;
+  padding: 48px 24px;
+  color: #57606a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ── error banner ── */
+.error-banner {
+  background: #ffebe9;
+  border: 1px solid #ff818266;
+  border-radius: 6px;
+  padding: 12px 16px;
+  color: #cf222e;
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+/* ── summary sections ── */
+.summary-section {
+  margin-bottom: 36px;
+}
+.summary-section__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.summary-section__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #24292e;
+}
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #eaeef2;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #57606a;
+}
+
+/* ── PR list ── */
+.pr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── PR card ── */
+.pr-card {
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.pr-card:hover {
+  border-color: #0969da;
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.08);
+}
+
+/* header row */
+.pr-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.pr-card__state {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.pr-card__state--open  { background: #dafbe1; color: #1a7f37; }
+.pr-card__state--draft { background: #eaeef2; color: #57606a; }
+.pr-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #24292e;
+  text-decoration: none;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.pr-card__title:hover { color: #0969da; text-decoration: underline; }
+
+/* meta row */
+.pr-card__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  font-size: 12px;
+  color: #57606a;
+}
+.pr-card__avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pr-card__author {
+  color: #0969da;
+  text-decoration: none;
+  font-weight: 500;
+}
+.pr-card__author:hover { text-decoration: underline; }
+.pr-card__sep { color: #d0d7de; }
+
+/* labels row */
+.pr-card__labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.pr-label {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* footer row */
+.pr-card__footer {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: #57606a;
+}
+.pr-card__stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* ── loading / empty ── */
+.loading {
+  font-size: 13px;
+  color: #8b949e;
+  padding: 10px 0;
+}
+.empty-msg {
+  font-size: 13px;
+  color: #8b949e;
+  font-style: italic;
+  padding: 10px 0;
+}
+
+/* ── buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.btn:hover { opacity: 0.85; }
+.btn--primary   { background: #2da44e; color: #fff; }
+.btn--secondary { background: #f6f8fa; color: #24292e; border: 1px solid #d0d7de; }

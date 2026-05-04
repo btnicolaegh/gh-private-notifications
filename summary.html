@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PR Summary — GitHub Notifications</title>
+  <link rel="stylesheet" href="summary.css" />
+</head>
+<body>
+  <div class="page">
+
+    <header class="page-header">
+      <img src="icons/icon.svg" alt="" class="page-header__icon" />
+      <h1 class="page-header__title">PR Summary</h1>
+      <div class="header-actions">
+        <span id="last-refreshed" class="meta-line"></span>
+        <button id="refresh-btn" class="btn btn--secondary" title="Refresh">🔄 Refresh</button>
+        <button id="open-settings-btn" class="btn btn--secondary" title="Settings">⚙ Settings</button>
+      </div>
+    </header>
+
+    <!-- Not configured -->
+    <div id="not-configured" class="state-notice" hidden>
+      <p>Extension not configured. Please open settings first.</p>
+      <button id="open-settings-btn-2" class="btn btn--primary">Open Settings</button>
+    </div>
+
+    <!-- Global error -->
+    <div id="error-banner" class="error-banner" hidden></div>
+
+    <main id="main-content">
+
+      <!-- Activity from watched users -->
+      <section class="summary-section" id="section-watched">
+        <div class="summary-section__header">
+          <h2 class="summary-section__title">👥 Activity from Watched Users</h2>
+          <span id="watched-count" class="count-badge"></span>
+        </div>
+        <div id="watched-prs-list" class="pr-list">
+          <p class="loading">Loading…</p>
+        </div>
+      </section>
+
+      <!-- Review requested -->
+      <section class="summary-section">
+        <div class="summary-section__header">
+          <h2 class="summary-section__title">🔍 Awaiting Your Review</h2>
+          <span id="review-count" class="count-badge"></span>
+        </div>
+        <div id="review-prs-list" class="pr-list">
+          <p class="loading">Loading…</p>
+        </div>
+      </section>
+
+      <!-- Assigned to me -->
+      <section class="summary-section">
+        <div class="summary-section__header">
+          <h2 class="summary-section__title">📌 Assigned to You</h2>
+          <span id="assigned-count" class="count-badge"></span>
+        </div>
+        <div id="assigned-prs-list" class="pr-list">
+          <p class="loading">Loading…</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="summary.js"></script>
+</body>
+</html>
