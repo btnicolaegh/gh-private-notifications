@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <circle cx="48" cy="48" r="48" fill="#24292e"/>
+  <!-- Bell shape -->
+  <path fill="#ffffff" d="
+    M48 18
+    a4 4 0 0 0-4 4
+    v1.5
+    C35.5 25.8 30 33.2 30 42
+    v12
+    l-4 4
+    v2
+    h44
+    v-2
+    l-4-4
+    V42
+    c0-8.8-5.5-16.2-14-18.5
+    V22
+    a4 4 0 0 0-4-4z
+  "/>
+  <!-- Bell bottom clapper -->
+  <ellipse cx="48" cy="76" rx="5" ry="3.5" fill="#ffffff"/>
+</svg>

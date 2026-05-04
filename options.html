@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GitHub Private Notifications — Settings</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="page-header">
+      <img src="icons/icon.svg" alt="" class="page-header__icon" />
+      <h1 class="page-header__title">GitHub Private Notifications</h1>
+      <p class="page-header__sub">Settings</p>
+    </header>
+
+    <form id="settings-form" class="card" novalidate>
+
+      <section class="section">
+        <h2 class="section__title">Connection</h2>
+
+        <div class="field">
+          <label class="field__label" for="github-url">
+            GitHub Enterprise URL
+          </label>
+          <input
+            type="url"
+            id="github-url"
+            name="githubUrl"
+            class="field__input"
+            placeholder="https://github.example.com"
+            autocomplete="off"
+            spellcheck="false"
+            required
+          />
+          <p class="field__hint">
+            Root URL of your GitHub Enterprise instance.
+          </p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="token">
+            Personal Access Token
+          </label>
+          <div class="input-row">
+            <input
+              type="password"
+              id="token"
+              name="token"
+              class="field__input"
+              placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+              autocomplete="new-password"
+              spellcheck="false"
+              required
+            />
+            <button type="button" id="toggle-token" class="icon-btn" title="Show / hide token">👁</button>
+          </div>
+          <p class="field__hint">
+            Create a token at
+            <span class="code">Settings → Developer settings → Personal access tokens</span>
+            with the <span class="code">notifications</span> scope.
+          </p>
+        </div>
+
+        <button type="button" id="test-btn" class="btn btn--secondary">
+          Test connection
+        </button>
+        <p id="test-result" class="feedback" aria-live="polite"></p>
+      </section>
+
+      <section class="section">
+        <h2 class="section__title">Notifications</h2>
+
+        <div class="field field--inline">
+          <input type="checkbox" id="show-inbox" name="showInbox" class="field__check" />
+          <label class="field__label" for="show-inbox">
+            Notify for inbox items (assignments, comments, state changes…)
+          </label>
+        </div>
+
+        <div class="field field--inline">
+          <input type="checkbox" id="show-mentions" name="showMentions" class="field__check" />
+          <label class="field__label" for="show-mentions">
+            Notify for @mentions and team mentions
+          </label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section__title">Polling interval</h2>
+
+        <div class="field">
+          <label class="field__label" for="poll-interval">
+            Check every
+          </label>
+          <div class="input-row input-row--narrow">
+            <input
+              type="number"
+              id="poll-interval"
+              name="pollInterval"
+              class="field__input field__input--short"
+              min="1"
+              max="60"
+              value="5"
+            />
+            <span class="unit">minutes</span>
+          </div>
+          <p class="field__hint">Minimum 1 minute. Lower values increase API usage.</p>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary">Save settings</button>
+        <p id="save-result" class="feedback" aria-live="polite"></p>
+      </div>
+    </form>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

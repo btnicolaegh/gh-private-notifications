@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GitHub Private Notifications</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="header">
+    <img src="icons/icon.svg" alt="" class="header__icon" />
+    <span class="header__title">GitHub Notifications</span>
+  </header>
+
+  <main class="content">
+    <div id="not-configured" class="state state--warn" hidden>
+      <p>Extension not configured.</p>
+      <button id="open-options" class="btn btn--primary">Open Settings</button>
+    </div>
+
+    <div id="error-state" class="state state--error" hidden>
+      <p class="state__label">⚠️ Last check failed</p>
+      <p id="error-message" class="state__detail"></p>
+      <button id="retry-btn" class="btn btn--secondary">Retry now</button>
+    </div>
+
+    <div id="status-ok" class="state" hidden>
+      <div class="badge-row">
+        <span class="badge" id="unread-badge">0</span>
+        <span class="badge-label">unread notifications</span>
+      </div>
+      <p id="last-checked" class="meta"></p>
+      <div class="actions">
+        <button id="open-inbox" class="btn btn--primary">Open Inbox</button>
+        <button id="open-mentions" class="btn btn--secondary">Mentions</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <button id="settings-btn" class="link-btn" title="Open settings">⚙ Settings</button>
+    <button id="check-now-btn" class="link-btn">Check now</button>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
