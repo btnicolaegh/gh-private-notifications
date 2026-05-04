@@ -87,6 +87,28 @@
       </section>
 
       <section class="section">
+        <h2 class="section__title">Watched Users</h2>
+
+        <div class="field">
+          <label class="field__label" for="watched-users">
+            GitHub usernames to watch
+          </label>
+          <textarea
+            id="watched-users"
+            name="watchedUsers"
+            class="field__input field__input--textarea"
+            placeholder="username1, username2, username3"
+            rows="3"
+            spellcheck="false"
+          ></textarea>
+          <p class="field__hint">
+            Enter GitHub usernames separated by commas or new lines.
+            Their open PRs will appear on the <strong>PR Summary</strong> page.
+          </p>
+        </div>
+      </section>
+
+      <section class="section">
         <h2 class="section__title">Polling interval</h2>
 
         <div class="field">
