@@ -202,12 +202,9 @@ async function pollWatchedUserPRs(apiBase, token, watchedUsers) {
     const prs = await searchOpenPRsByUser(apiBase, token, username);
 
     if (!(username in lastPRTime)) {
-      // First time seeing this user — seed timestamp, skip notifications.
-      const newest = prs.reduce((max, pr) => {
-        const t = new Date(pr.created_at).getTime();
-        return t > max ? t : max;
-      }, 0);
-      lastPRTime[username] = newest || Date.now();
+      // First time seeing this user — seed with the current time so only
+      // PRs created after this poll will trigger notifications.
+      lastPRTime[username] = Date.now();
       changed = true;
       continue;
     }

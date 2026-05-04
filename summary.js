@@ -258,15 +258,17 @@ async function render() {
   ]);
 
   // Merge and deduplicate watched-user PRs, sorted by most recently updated.
+  // Parse dates once (Schwartzian transform) to avoid repeated Date construction.
   const watchedMap = new Map();
   for (const prs of watchedPRArrays) {
     for (const pr of prs) {
       watchedMap.set(pr.id, pr);
     }
   }
-  const watchedPRs = [...watchedMap.values()].sort(
-    (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
-  );
+  const watchedPRs = [...watchedMap.values()]
+    .map((pr) => ({ pr, t: new Date(pr.updated_at).getTime() }))
+    .sort((a, b) => b.t - a.t)
+    .map(({ pr }) => pr);
 
   renderList("watched-prs-list", "watched-count", watchedPRs, "No open PRs from watched users.");
   renderList("review-prs-list", "review-count", reviewPRs, "No PRs awaiting your review. 🎉");
