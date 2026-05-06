@@ -12,10 +12,10 @@
 
 if (typeof globalThis.browser === "undefined") {
   globalThis.browser = chrome; // eslint-disable-line no-undef
+}
 
-  // Manifest V3 renamed `browserAction` → `action`.
-  // Alias it back so all existing `browser.browserAction.*` calls work.
-  if (typeof chrome.browserAction === "undefined" && chrome.action) { // eslint-disable-line no-undef
-    chrome.browserAction = chrome.action; // eslint-disable-line no-undef
-  }
+// Manifest V3 renamed `browserAction` → `action`.
+// Alias it back so all existing `browser.browserAction.*` calls work.
+if (!globalThis.browser.browserAction && globalThis.browser.action) {
+  globalThis.browser.browserAction = globalThis.browser.action;
 }
