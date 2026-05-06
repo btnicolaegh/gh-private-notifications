@@ -71,7 +71,7 @@ jobs:
 
       - name: Capture Firefox build details
         run: |
-          ZIP=$(ls web-ext-artifacts/gh_private_notifications-[0-9]*.zip)
+          ZIP=$(ls web-ext-artifacts/*.zip)
           SIZE=$(du -sh "$ZIP" | cut -f1)
           FILES=$(unzip -l "$ZIP" | tail -n +4 | head -n -2 | awk '{print $NF}')
           echo "" >> "$GITHUB_STEP_SUMMARY"
@@ -92,7 +92,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gh-private-notifications-firefox
-          path: web-ext-artifacts/gh_private_notifications-[0-9]*.zip
+          path: web-ext-artifacts/*.zip
           if-no-files-found: error
           retention-days: 90
 

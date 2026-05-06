@@ -38,6 +38,10 @@ jobs:
       - name: Build (Firefox)
         run: web-ext build --overwrite-dest
 
+      - name: Record Firefox zip path
+        id: ff_zip
+        run: echo "path=$(ls web-ext-artifacts/*.zip)" >> "$GITHUB_OUTPUT"
+
       - name: Build (Chrome)
         run: |
           VERSION="${{ steps.version.outputs.version }}"
@@ -54,7 +58,7 @@ jobs:
       - name: Write release notes
         id: notes
         run: |
-          FF_ZIP=$(ls web-ext-artifacts/gh_private_notifications-[0-9]*.zip)
+          FF_ZIP="${{ steps.ff_zip.outputs.path }}"
           CR_ZIP=$(ls web-ext-artifacts/*chrome*.zip)
           FF_SIZE=$(du -sh "$FF_ZIP" | cut -f1)
           CR_SIZE=$(du -sh "$CR_ZIP" | cut -f1)
