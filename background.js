@@ -15,6 +15,13 @@
 // Firefox provides `browser`; Chrome provides `chrome` (MV3: `action` replaces
 // `browserAction`).  Normalise everything to `browser.*` so the rest of this
 // file is browser-agnostic.
+//
+// NOTE: This block mirrors compat.js (which is loaded by the HTML pages).
+// It must be inlined here because Chrome MV3 runs background.js as a service
+// worker, and service workers cannot load sibling extension scripts via
+// importScripts when those scripts live in the extension package without being
+// explicitly declared — keeping the shim inline avoids that constraint while
+// keeping the HTML pages clean.
 if (typeof globalThis.browser === "undefined") {
   globalThis.browser = chrome; // eslint-disable-line no-undef
   if (typeof chrome.browserAction === "undefined" && chrome.action) { // eslint-disable-line no-undef
