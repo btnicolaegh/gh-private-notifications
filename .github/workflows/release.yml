@@ -54,7 +54,7 @@ jobs:
       - name: Write release notes
         id: notes
         run: |
-          FF_ZIP=$(ls web-ext-artifacts/*.zip | grep -v chrome)
+          FF_ZIP=$(ls web-ext-artifacts/gh_private_notifications-[0-9]*.zip)
           CR_ZIP=$(ls web-ext-artifacts/*chrome*.zip)
           FF_SIZE=$(du -sh "$FF_ZIP" | cut -f1)
           CR_SIZE=$(du -sh "$CR_ZIP" | cut -f1)
