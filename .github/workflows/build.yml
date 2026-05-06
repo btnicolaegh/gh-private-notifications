@@ -67,11 +67,11 @@ jobs:
         continue-on-error: false
 
       - name: Build (Firefox)
-        run: web-ext build --overwrite-dest
+        run: web-ext build --overwrite-dest --filename "gh_private_notifications-firefox-{version}.zip"
 
       - name: Capture Firefox build details
         run: |
-          ZIP=$(ls web-ext-artifacts/*.zip)
+          ZIP=$(ls web-ext-artifacts/*firefox*.zip)
           SIZE=$(du -sh "$ZIP" | cut -f1)
           FILES=$(unzip -l "$ZIP" | tail -n +4 | head -n -2 | awk '{print $NF}')
           echo "" >> "$GITHUB_STEP_SUMMARY"

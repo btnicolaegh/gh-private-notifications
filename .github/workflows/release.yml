@@ -25,22 +25,41 @@ jobs:
       - name: Install web-ext
         run: npm install --global web-ext
 
-      - name: Read version from manifest
+      - name: Bump patch version
         id: version
         run: |
-          VERSION=$(node -e "console.log(require('./manifest.json').version)")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          NEW_VERSION=$(node -e "
+            const v = require('./manifest.json').version.split('.');
+            if (v.length !== 3 || v.some(isNaN)) { process.stderr.write('Unexpected version format\n'); process.exit(1); }
+            v[2] = parseInt(v[2], 10) + 1;
+            console.log(v.join('.'));
+          ")
+          node -e "
+            const fs = require('fs');
+            const v = '${NEW_VERSION}';
+            for (const f of ['manifest.json', 'manifest.chrome.json']) {
+              const m = JSON.parse(fs.readFileSync(f, 'utf8'));
+              m.version = v;
+              fs.writeFileSync(f, JSON.stringify(m, null, 2) + '\n');
+            }
+          "
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifest.json manifest.chrome.json
+          git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
+          git push
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Lint (Firefox)
         run: web-ext lint
 
       - name: Build (Firefox)
-        run: web-ext build --overwrite-dest
+        run: web-ext build --overwrite-dest --filename "gh_private_notifications-firefox-{version}.zip"
 
       - name: Record Firefox zip path
         id: ff_zip
-        run: echo "path=$(ls web-ext-artifacts/*.zip)" >> "$GITHUB_OUTPUT"
+        run: echo "path=$(ls web-ext-artifacts/*firefox*.zip)" >> "$GITHUB_OUTPUT"
 
       - name: Build (Chrome)
         run: |
