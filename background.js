@@ -5,9 +5,29 @@
  * and fires browser/system notifications based on the user's granular
  * trigger settings.  Also polls the search API to detect new PRs opened
  * by watched users.
+ *
+ * Works as a Firefox MV2 event page and as a Chrome MV3 service worker.
  */
 
 "use strict";
+
+// ─── cross-browser compatibility ─────────────────────────────────────────────
+// Firefox provides `browser`; Chrome provides `chrome` (MV3: `action` replaces
+// `browserAction`).  Normalise everything to `browser.*` so the rest of this
+// file is browser-agnostic.
+//
+// NOTE: This block mirrors compat.js (which is loaded by the HTML pages).
+// It must be inlined here because Chrome MV3 runs background.js as a service
+// worker, and service workers cannot load sibling extension scripts via
+// importScripts when those scripts live in the extension package without being
+// explicitly declared — keeping the shim inline avoids that constraint while
+// keeping the HTML pages clean.
+if (typeof globalThis.browser === "undefined") {
+  globalThis.browser = chrome; // eslint-disable-line no-undef
+  if (typeof chrome.browserAction === "undefined" && chrome.action) { // eslint-disable-line no-undef
+    chrome.browserAction = chrome.action; // eslint-disable-line no-undef
+  }
+}
 
 const ALARM_NAME = "gh-notifications-poll";
 const DEFAULT_POLL_INTERVAL_MINUTES = 5;
@@ -362,9 +382,22 @@ browser.runtime.onMessage.addListener((message) => {
 
 // ─── initialisation ──────────────────────────────────────────────────────────
 
+/**
+ * Run once on first install / browser start.
+ *
+ * In Chrome MV3 the background script runs as a service worker that is
+ * re-evaluated every time it wakes up (e.g. for an alarm, a message, or a
+ * notification click).  Calling setupAlarm() unconditionally on every wake
+ * would reset the alarm timer and potentially starve the poll cycle.  We
+ * therefore only set up the alarm — and do the initial poll — when no alarm
+ * exists yet (fresh start or after the alarm was cleared).
+ */
 async function initialize() {
-  await setupAlarm();
-  await pollNotifications();
+  const existing = await browser.alarms.get(ALARM_NAME);
+  if (!existing) {
+    await setupAlarm();
+    await pollNotifications();
+  }
 }
 
 initialize();

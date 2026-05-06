@@ -32,34 +32,68 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Lint
+      - name: Lint (Firefox)
         run: web-ext lint
 
-      - name: Build
+      - name: Build (Firefox)
         run: web-ext build --overwrite-dest
+
+      - name: Record Firefox zip path
+        id: ff_zip
+        run: echo "path=$(ls web-ext-artifacts/*.zip)" >> "$GITHUB_OUTPUT"
+
+      - name: Build (Chrome)
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p chrome-staging
+          cp background.js compat.js \
+             popup.html popup.js popup.css \
+             options.html options.js options.css \
+             summary.html summary.js summary.css \
+             chrome-staging/
+          cp -r icons chrome-staging/
+          cp manifest.chrome.json chrome-staging/manifest.json
+          (cd chrome-staging && zip -r "../web-ext-artifacts/gh_private_notifications-chrome-${VERSION}.zip" .)
 
       - name: Write release notes
         id: notes
         run: |
-          ZIP=$(ls web-ext-artifacts/*.zip)
-          SIZE=$(du -sh "$ZIP" | cut -f1)
+          FF_ZIP="${{ steps.ff_zip.outputs.path }}"
+          CR_ZIP=$(ls web-ext-artifacts/*chrome*.zip)
+          FF_SIZE=$(du -sh "$FF_ZIP" | cut -f1)
+          CR_SIZE=$(du -sh "$CR_ZIP" | cut -f1)
           cat > /tmp/release-notes.md <<EOF
           ## GitHub Private Notifications v${{ steps.version.outputs.version }}
 
-          Firefox extension that monitors a GitHub Enterprise inbox and @mentions
+          Browser extension that monitors a GitHub Enterprise inbox and @mentions
           and fires native desktop notifications — even when email is disabled by admins.
 
-          ### Installation
-          1. Download the \`.zip\` asset below.
+          Supports **Firefox** (Manifest V2) and **Chrome** (Manifest V3).
+
+          ### Firefox installation
+          1. Download the \`gh_private_notifications-*.zip\` asset below.
           2. Open Firefox and go to \`about:debugging#/runtime/this-firefox\`.
           3. Click **Load Temporary Add-on…** and select the downloaded \`.zip\`.
           4. Open the extension options and enter your GHE base URL and a Personal Access Token.
 
-          > For a permanent installation, load the extension via Firefox's Developer Edition or sign it through [AMO](https://addons.mozilla.org/).
+          > For a permanent installation, sign it through [AMO](https://addons.mozilla.org/).
 
-          ### Packaged files (${SIZE})
+          ### Chrome installation
+          1. Download the \`gh_private_notifications-chrome-*.zip\` asset below and unzip it.
+          2. Open Chrome and go to \`chrome://extensions\`.
+          3. Enable **Developer mode** (toggle in the top-right corner).
+          4. Click **Load unpacked** and select the unzipped folder.
+          5. Open the extension options and enter your GHE base URL and a Personal Access Token.
+
+          ### Packaged files
+          **Firefox** (${FF_SIZE}):
           \`\`\`
-          $(unzip -l "$ZIP" | tail -n +4 | head -n -2 | awk '{print $NF}')
+          $(unzip -l "$FF_ZIP" | tail -n +4 | head -n -2 | awk '{print $NF}')
+          \`\`\`
+
+          **Chrome** (${CR_SIZE}):
+          \`\`\`
+          $(unzip -l "$CR_ZIP" | tail -n +4 | head -n -2 | awk '{print $NF}')
           \`\`\`
           EOF
 
@@ -107,7 +141,7 @@ jobs:
               prerelease: false,
             });
 
-            // Upload the .zip asset
+            // Upload all .zip assets (Firefox + Chrome)
             const zipDir = 'web-ext-artifacts';
             const files = fs.readdirSync(zipDir).filter(f => f.endsWith('.zip'));
             for (const file of files) {

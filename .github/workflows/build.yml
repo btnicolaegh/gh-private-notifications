@@ -23,9 +23,17 @@ jobs:
       - name: Install web-ext
         run: npm install --global web-ext
 
+      - name: Read version from manifest
+        id: version
+        run: |
+          VERSION=$(node -e "console.log(require('./manifest.json').version)")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Show extension info
         run: |
           echo "### Extension metadata" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "#### Firefox (MV2)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
           echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
@@ -38,22 +46,36 @@ jobs:
             console.log('| Manifest version | ' + m.manifest_version + ' |');
             console.log('| Permissions | \`' + m.permissions.join(', ') + '\` |');
           " >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "#### Chrome (MV3)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+          node -e "
+            const m = require('./manifest.chrome.json');
+            console.log('| Name | ' + m.name + ' |');
+            console.log('| Version | ' + m.version + ' |');
+            console.log('| Manifest version | ' + m.manifest_version + ' |');
+            console.log('| Permissions | \`' + m.permissions.join(', ') + '\` |');
+            console.log('| Host permissions | \`' + m.host_permissions.join(', ') + '\` |');
+          " >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Lint
+      # ── Firefox build ──────────────────────────────────────────────────────
+
+      - name: Lint (Firefox)
         run: web-ext lint --verbose
-        # Collect the lint report and write it to the job summary
         continue-on-error: false
 
-      - name: Build
+      - name: Build (Firefox)
         run: web-ext build --overwrite-dest
 
-      - name: Capture build details
+      - name: Capture Firefox build details
         run: |
           ZIP=$(ls web-ext-artifacts/*.zip)
           SIZE=$(du -sh "$ZIP" | cut -f1)
           FILES=$(unzip -l "$ZIP" | tail -n +4 | head -n -2 | awk '{print $NF}')
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Build artifact" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Firefox artifact" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
           echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
@@ -66,10 +88,53 @@ jobs:
           echo "$FILES" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload artifact
+      - name: Upload Firefox artifact
         uses: actions/upload-artifact@v4
         with:
-          name: gh-private-notifications
+          name: gh-private-notifications-firefox
           path: web-ext-artifacts/*.zip
+          if-no-files-found: error
+          retention-days: 90
+
+      # ── Chrome build ───────────────────────────────────────────────────────
+
+      - name: Build (Chrome)
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p chrome-staging
+          cp background.js compat.js \
+             popup.html popup.js popup.css \
+             options.html options.js options.css \
+             summary.html summary.js summary.css \
+             chrome-staging/
+          cp -r icons chrome-staging/
+          cp manifest.chrome.json chrome-staging/manifest.json
+          mkdir -p web-ext-artifacts
+          (cd chrome-staging && zip -r "../web-ext-artifacts/gh_private_notifications-chrome-${VERSION}.zip" .)
+
+      - name: Capture Chrome build details
+        run: |
+          ZIP=$(ls web-ext-artifacts/*chrome*.zip)
+          SIZE=$(du -sh "$ZIP" | cut -f1)
+          FILES=$(unzip -l "$ZIP" | tail -n +4 | head -n -2 | awk '{print $NF}')
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Chrome artifact" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| File | \`$(basename $ZIP)\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Size | $SIZE |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Packaged files:**" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "$FILES" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Chrome artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gh-private-notifications-chrome
+          path: web-ext-artifacts/*chrome*.zip
           if-no-files-found: error
           retention-days: 90

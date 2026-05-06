@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub Private Notifications",
+  "version": "1.1.0",
+  "description": "Monitor GitHub Enterprise inbox and mentions and receive system notifications — even when email is disabled.",
+  "author": "btnicolaegh",
+
+  "permissions": [
+    "notifications",
+    "storage",
+    "alarms",
+    "tabs"
+  ],
+
+  "host_permissions": [
+    "<all_urls>"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "action": {
+    "default_icon": {
+      "48": "icons/icon.svg",
+      "96": "icons/icon.svg"
+    },
+    "default_popup": "popup.html",
+    "default_title": "GitHub Private Notifications"
+  },
+
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  }
+}
