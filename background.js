@@ -290,10 +290,13 @@ async function pollNotifications() {
   await browser.storage.local.set({ lastError: null, lastChecked: Date.now() });
 
   // Surface new notifications that match the user's filter preferences.
+  // Use a composite key of id + updated_at so that new activity on an existing
+  // thread (same id, different updated_at) still triggers a browser notification.
   let newCount = 0;
   for (const n of notifications) {
-    if (!seenIds.has(n.id)) {
-      seenIds.add(n.id);
+    const compositeKey = `${n.id}:${n.updated_at}`;
+    if (!seenIds.has(compositeKey)) {
+      seenIds.add(compositeKey);
       newCount++;
 
       if (shouldNotify(n, settings)) {
