@@ -146,6 +146,29 @@ async function testConnection() {
   }
 }
 
+// ─── test notification ───────────────────────────────────────────────────────
+
+async function sendTestNotification() {
+  clearFeedback($("test-notif-result"));
+
+  try {
+    await browser.notifications.create("test-notification", {
+      type: "basic",
+      iconUrl: browser.runtime.getURL("icons/icon.svg"),
+      title: "GitHub Private Notifications — Test",
+      message: "🎉 Notifications are working! You will see alerts like this.",
+    });
+    setFeedback($("test-notif-result"), "✔ Test notification sent.", "ok");
+    setTimeout(() => clearFeedback($("test-notif-result")), 3000);
+  } catch (err) {
+    setFeedback(
+      $("test-notif-result"),
+      `✘ Could not send notification: ${err.message}`,
+      "error"
+    );
+  }
+}
+
 // ─── toggle token visibility ─────────────────────────────────────────────────
 
 function toggleTokenVisibility() {
@@ -165,6 +188,7 @@ function toggleTokenVisibility() {
 
 document.getElementById("settings-form").addEventListener("submit", saveSettings);
 $("test-btn").addEventListener("click", testConnection);
+$("test-notif-btn").addEventListener("click", sendTestNotification);
 $("toggle-token").addEventListener("click", toggleTokenVisibility);
 
 // ─── init ─────────────────────────────────────────────────────────────────────
